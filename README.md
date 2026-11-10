@@ -1,16 +1,29 @@
-# Zero Trust File Access Control Demo
-## Why Zero Trust
-Instead of assuming everything behind the corporate firewall is safe, the Zero Trust model assumes breach and verifies each request as though it originates from an open network. Regardless of where the request originates or what resource it accesses, Zero Trust teaches us to “never trust, always verify.” Every access request is fully authenticated, authorized, and encrypted before granting access. Zero trust adoption can offer organizations the following benefits:
+# 🛡️ zero-trust-file-security
 
-1.  protection of sensitive data.
-2.  securing digital transformation.
-3.  lower breach risk and detection time.
-4.	close security gaps and minimize risk of lateral movement.
-5.  better control in cloud environments.
+**zero-trust-file-security** implements a robust zero-trust architecture for file system access. By defaulting to a strict "deny-all" policy, this framework protects sensitive directories from unauthorized viewing, modification, or ransomware attacks, requiring explicit authorization for every read, write, and execute request.
 
-## Zero Trust Architecture
-Instead of assuming everything behind the corporate firewall is safe, the Zero Trust model assumes breach and verifies each request as though it originates from an open network. Regardless of where the request originates or what resource it accesses, Zero Trust teaches us to “never trust, always verify.” Every access request is fully authenticated, authorized, and encrypted before granting access.
-![Zero Trust Architecture](https://www.easefilter.com/images/ZeroTrust.png)
+Powered by the [EaseFilter SDK](https://github.com/EaseFilterSDK), this project gives you kernel-level, high-performance file interception and access control.
+
+## 🏗️ Architecture
+
+The following diagram illustrates how policy rules in user mode are enforced down at the Windows Kernel level, intercepting all I/O requests before they reach the file system:
+
+![Zero-Trust Architecture](https://www.easefilter.com/images/zero-trust-architecture.jpg)
+
+## 🖥️ Demo Interface
+
+Below is an example of the zero-trust filter service dashboard, showcasing how to dynamically handle and display file-access rule exceptions for processes and users:
+
+![Zero-Trust Demo UI](https://www.easefilter.com/images/zero-trust-demo-screenshot.jpg)
+
+## ✨ Core Features
+
+* **Default Deny (Zero-Trust):** All users, applications, and network requests are blacklisted by default.
+* **Process-Level Whitelisting:** Explicitly authorize trusted applications (e.g., `notepad.exe`, `your-app.exe`) to access specific files.
+* **Granular Access Rights:** Define exact permissions (Read, Write, Delete, Rename, Execute) on a per-user or per-process basis.
+* **Ransomware & Malware Prevention:** Untrusted processes cannot encrypt, delete, or exfiltrate protected files out of the box.
+* **Real-Time Auditing:** Comprehensive logging of all allowed and denied file I/O operations for compliance and security monitoring.
+
 ## Implement Zero trust file access control with EaseFilter
 [EaseFilter File Control Filter Driver](https://www.easefilter.com/kb/file-control-file-security-sdk.htm) allows you to control the file I/O operations with the filter rule configuration by setting the whitelist and blacklist processes or users, you can allow or block the specific file I/O operation to the specific process or user, you can control who can read your file, allow or block the file modification, prevent your important file from being deleted, renamed.
 
@@ -18,29 +31,74 @@ To implement the Zero Trust file access control , you can setup the filter rule 
 
 [EaseFilter Encryption Filter Driver(EEFD)](https://www.easefilter.com/kb/transparent-file-encryption-filter-driver-sdk.htm) allows you to encrypt file automatically and transparently, combine with the File Control Filter Driver and [Process Filter Driver](https://www.easefilter.com/kb/process-filter-driver-sdk.htm), you can implement the Zero Trust File Access Control with encryption enabled, it can enhance the file security. By default all files will be encrypted automatically, all processes or users can't read the encrypted files, they will get the raw encrypted data. You can authorize the processes or users to access these encrypted files. 
 
-## How to run ZeroTrustDemo.exe?
 
-Usage: 	ZeroTrustDemo folderNameMask processName e
+## ⚙️ Installation
 
-options:
+1. Clone this repository to your local machine:
+   ```bash
+   git clone https://github.com/EaseFilterSDK/Zero-Trust-File-Security.git
+   ```
+2. Open the solution in Visual Studio.
+3. Ensure the `EaseFilter.FilterControl.dll` is properly referenced in your project.
+4. Build the solution. *Note: You will need to run the application with Administrator privileges to load the filter driver.*
 
-folderNameMask       --setup the zero trust folder, i.e. c:\\zerotrust\\*"
+## 🚀 Getting Started
 
-processName          --authorized the process name to access the files, i.e. notepad.exe
+The core concept of this project is to deny all access by default and explicitly grant permissions to trusted processes.
 
-e or null           --if it is e, it will enable the encryption for zero trust folder.
+The following example demonstrates how to protect a directory (`C:\SecureData\`) so that absolutely no user or program can read or modify the files—except for `notepad.exe`.
 
-Example1:
+### Example: Whitelisting a Specific Process
 
-ZeroTrustDemo c:\zerotrust\*  notepade.exe  e
+```csharp
+using System;
+using EaseFilter.FilterControl;
 
-All files in folder c:\zerotrust will be encrypted by default, no process can't read the encrypted files except the process "notepad.exe"
+class Program
+{
+    static void Main(string[] args)
+    {
+        // 1. Initialize the Filter Control
+        FilterControl filterControl = new FilterControl();
 
-Example2:
+        // 2. Define the protected directory
+        string protectedPath = @"C:\SecureData\*";
+        FileFilter rule = new FileFilter(protectedPath);
 
-ZeroTrustDemo c:\zerotrust\*  notepade.exe 
+        // 3. ZERO TRUST: Deny all file access by default
+        // This blocks read, write, delete, and execution for everyone
+        rule.AccessFlag = FilterAPI.ALLOW_MAX_RIGHT_ACCESS 
+                        & ~FilterAPI.ALLOW_OPEN_WTIH_READ_ACCESS 
+                        & ~FilterAPI.ALLOW_OPEN_WITH_WRITE_ACCESS;
 
-No process can access the files in folder c:\zerotrust except the process "notepad.exe"
+        // 4. WHITELIST: Grant full access ONLY to 'notepad.exe'
+        // Any other process attempting to open these files will receive an Access Denied error.
+        rule.AddExcludedProcessName("notepad.exe");
+
+        // 5. Add the rule and start the engine
+        filterControl.AddFilter(rule);
+        
+        try
+        {
+            filterControl.StartFilter();
+            Console.WriteLine("Zero-Trust File Security is active.");
+            Console.WriteLine("Try opening files in C:\\SecureData\\ with anything other than Notepad!");
+            Console.ReadLine();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Failed to start filter: " + ex.Message);
+        }
+        finally
+        {
+            // Ensure the filter stops securely when the app closes
+            filterControl.StopFilter();
+        }
+    }
+}
+```
+
+
 
 ## EaseFilter File System Filter Driver SDK Reference
 | Product Name | Description |
@@ -84,5 +142,17 @@ No process can access the files in folder c:\zerotrust except the process "notep
 
 ## Support
 If you have questions or need help, please contact support@easefilter.com 
+
+## 📄 License
+
+This repository contains two distinct licensing categories:
+
+1. **Wrapper/Implementation Code (MIT License):** 
+   The source code, scripts, and configuration files provided directly in this repository are licensed under the [MIT License](LICENSE). You are free to modify, distribute, and use this specific integration code.
+
+2. **EaseFilter SDK (Commercial License):**
+   This project requires the EaseFilter SDK (including its binaries, filter drivers, and core libraries) to function. The EaseFilter SDK is **proprietary commercial software** and is strictly excluded from the MIT License. 
+   
+   To use the EaseFilter SDK for commercial purposes or in a production environment, you must obtain a valid commercial license directly from [EaseFilter](https://www.easefilter.com/).
 
 [Home](https://www.easefilter.com/) | [Solution](https://www.easefilter.com/solutions.htm) | [Download](https://www.easefilter.com/download.htm) | [Demos](https://www.easefilter.com/online-fileio-test.aspx) | [Blog](https://blog.easefilter.com/) | [Programming](https://www.easefilter.com/kb/programming.htm)
