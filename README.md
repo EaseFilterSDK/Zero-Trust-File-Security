@@ -2,7 +2,7 @@
 
 **zero-trust-file-security** implements a robust zero-trust architecture for file system access. By defaulting to a strict "deny-all" policy, this framework protects sensitive directories from unauthorized viewing, modification, or ransomware attacks, requiring explicit authorization for every read, write, and execute request.
 
-Powered by the [EaseFilter SDK](https://github.com/EaseFilterSDK), this project gives you kernel-level, high-performance file interception and access control.
+Powered by the [EaseFilter File Security SDK](https://github.com/EaseFilterSDK), this project gives you kernel-level, high-performance file interception and access control.
 
 ## 🏗️ Architecture
 
@@ -68,12 +68,21 @@ class Program
         // 3. ZERO TRUST: Deny all file access by default
         // This blocks read, write, delete, and execution for everyone
         rule.AccessFlag = FilterAPI.ALLOW_MAX_RIGHT_ACCESS 
-                        & ~FilterAPI.ALLOW_OPEN_WTIH_READ_ACCESS 
-                        & ~FilterAPI.ALLOW_OPEN_WITH_WRITE_ACCESS;
-
-        // 4. WHITELIST: Grant full access ONLY to 'notepad.exe'
-        // Any other process attempting to open these files will receive an Access Denied error.
-        rule.AddExcludedProcessName("notepad.exe");
+                        & ~FilterAPI.ALLOW_FILE_READ  
+						& ~FilterAPI.ALLOW_FILE_WRITE 
+                        & ~FilterAPI.ALLOW_FILE_DELETE;
+        	
+		// 4. WHITELIST: Grant full access ONLY to 'MySecureApp.exe'
+		// EXPLICIT AUTHORIZATION WITH CRYPTOGRAPHIC VERIFICATION
+		// Trust based on Digital Certificate (Best for commercial software)
+		// If a rogue MySecureApp.exe tries to access the files but isn't signed 
+		// by the real 'EaseFilter Technologies', it will be blocked instantly.
+		rule.AddTrustedProcessRight(
+			(uint)FilterAPI.ALLOW_MAX_ACCESS_RIGHT, 
+			"MySecureApp.exe", 
+			"EaseFilter Technologies", // Certificate Subject Name
+			""                       // Hash (omitted)
+		);
 
         // 5. Add the rule and start the engine
         filterControl.AddFilter(rule);
@@ -82,7 +91,7 @@ class Program
         {
             filterControl.StartFilter();
             Console.WriteLine("Zero-Trust File Security is active.");
-            Console.WriteLine("Try opening files in C:\\SecureData\\ with anything other than Notepad!");
+            Console.WriteLine("Try opening files in C:\\SecureData\\ with anything other than MySecureApp!");
             Console.ReadLine();
         }
         catch (Exception ex)
@@ -153,6 +162,6 @@ This repository contains two distinct licensing categories:
 2. **EaseFilter SDK (Commercial License):**
    This project requires the EaseFilter SDK (including its binaries, filter drivers, and core libraries) to function. The EaseFilter SDK is **proprietary commercial software** and is strictly excluded from the MIT License. 
    
-   To use the EaseFilter SDK for commercial purposes or in a production environment, you must obtain a valid commercial license directly from [EaseFilter](https://www.easefilter.com/).
+   To use the EaseFilter SDK for commercial purposes or in a production environment, you must obtain a valid commercial license directly from [EaseFilter](https://www.easefilter.com/License.pdf).
 
 [Home](https://www.easefilter.com/) | [Solution](https://www.easefilter.com/solutions.htm) | [Download](https://www.easefilter.com/download.htm) | [Demos](https://www.easefilter.com/online-fileio-test.aspx) | [Blog](https://blog.easefilter.com/) | [Programming](https://www.easefilter.com/kb/programming.htm)
