@@ -24,7 +24,7 @@ Below is an example of the zero-trust filter service dashboard, showcasing how t
 * **Ransomware & Malware Prevention:** Untrusted processes cannot encrypt, delete, or exfiltrate protected files out of the box.
 * **Real-Time Auditing:** Comprehensive logging of all allowed and denied file I/O operations for compliance and security monitoring.
 
-## Implement Zero trust file access control with EaseFilter
+## 📄 Implement Zero trust file access control with EaseFilter
 [EaseFilter File Control Filter Driver](https://www.easefilter.com/kb/file-control-file-security-sdk.htm) allows you to control the file I/O operations with the filter rule configuration by setting the whitelist and blacklist processes or users, you can allow or block the specific file I/O operation to the specific process or user, you can control who can read your file, allow or block the file modification, prevent your important file from being deleted, renamed.
 
 To implement the Zero Trust file access control , you can setup the filter rule with the default least privilege access rights, by default all the processes or users don’t have privilege to access the files inside this filter rule, it is zero trust to all processes and users. You can setup the whitelist for the filter rule, to add the specific access rights to specific processes or users, so the processes or users who are in the whitelist can have the specific access rights to the files.
@@ -68,8 +68,8 @@ class Program
         // 3. ZERO TRUST: Deny all file access by default
         // This blocks read, write, delete, and execution for everyone
         rule.AccessFlag = FilterAPI.ALLOW_MAX_RIGHT_ACCESS 
-                        & ~FilterAPI.ALLOW_FILE_READ  
-						& ~FilterAPI.ALLOW_FILE_WRITE 
+                        & ~FilterAPI.ALLOW_FILE_READ
+						& ~FilterAPI.ALLOW_FILE_WRITE
                         & ~FilterAPI.ALLOW_FILE_DELETE;
         	
 		// 4. WHITELIST: Grant full access ONLY to 'MySecureApp.exe'
@@ -152,7 +152,7 @@ class Program
 ## Support
 If you have questions or need help, please contact support@easefilter.com 
 
-## 📄 License
+## License
 
 This repository contains two distinct licensing categories:
 
