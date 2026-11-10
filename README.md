@@ -68,9 +68,9 @@ class Program
         // 3. ZERO TRUST: Deny all file access by default
         // This blocks read, write, delete, and execution for everyone
         rule.AccessFlag = FilterAPI.ALLOW_MAX_RIGHT_ACCESS 
-						& ~FilterAPI.ALLOW_FILE_WRITE
-                        & ~FilterAPI.ALLOW_FILE_DELETE;
-						& ~FilterAPI.ALLOW_FILE_READ						
+						& ~FilterAPI.ALLOW_FILE_READ;
+						& ~FilterAPI.ALLOW_FILE_WRITE;
+						& ~FilterAPI.ALLOW_FILE_DELETE;						
         	
 		// 4. WHITELIST: Grant full access ONLY to 'MySecureApp.exe'
 		// EXPLICIT AUTHORIZATION WITH CRYPTOGRAPHIC VERIFICATION
