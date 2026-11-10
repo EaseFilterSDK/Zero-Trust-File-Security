@@ -46,7 +46,7 @@ To implement the Zero Trust file access control , you can setup the filter rule 
 
 The core concept of this project is to deny all access by default and explicitly grant permissions to trusted processes.
 
-The following example demonstrates how to protect a directory (`C:\SecureData\`) so that absolutely no user or program can read or modify the files—except for `notepad.exe`.
+The following example demonstrates how to protect a directory (`C:\SecureData\`) so that absolutely no user or program can read or modify the files—except for `MySecureApp.exe`.
 
 ### Example: Whitelisting a Specific Process
 
@@ -68,7 +68,7 @@ class Program
         // 3. ZERO TRUST: Deny all file access by default
         // This blocks read, write, delete, and execution for everyone
         rule.AccessFlag = FilterAPI.ALLOW_MAX_RIGHT_ACCESS 
-                        & ~FilterAPI.ALLOW_FILE_READ
+                        & ~FilterAPI.ALLOW_FILE_READ						
 						& ~FilterAPI.ALLOW_FILE_WRITE
                         & ~FilterAPI.ALLOW_FILE_DELETE;
         	
